@@ -1,0 +1,77 @@
+.app-header {
+  background-color: #050B24;
+  color: #20afec;
+  padding: 1rem 2rem; /* Increased horizontal padding */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2); /* Adding subtle shadow for depth */
+}
+.app-header:not(:last-child) {
+  margin-bottom: 2rem;
+}
+
+.logo {
+  height: 60px; /* Adjust as needed */
+  width: auto; /* Maintain aspect ratio */
+  transition: transform 0.3s ease; /* Smooth transition for logo on hover */
+}
+
+.logo:hover {
+  transform: scale(1.05); /* Slightly enlarge logo on hover */
+}
+
+.navigation {
+  display: flex;
+  align-items: center;
+}
+
+.navigation a {
+  color: #3A9689;
+  text-decoration: none;
+  margin: 0 15px; /* Increased margin for better spacing */
+  padding: 5px 0; /* Padding to increase clickable area */
+  border-bottom: 3px solid transparent; /* Invisible border for transition */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.navigation a:hover,
+.navigation a.active {
+  color: #ffffff;
+  border-bottom-color: #20afec; /* Underline effect on hover and for active link */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .logo {
+    margin-bottom: 1rem; /* Add space between logo and navigation on smaller screens */
+  }
+
+  .navigation {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .navigation a {
+    margin: 5px; /* Reduce margin for smaller screens */
+    text-align: center;
+    flex-grow: 1; /* Navigation links take up equal space */
+  }
+}
+
+.navigation .login-link {
+  display: flex;
+  align-items: center;
+  color: #3A9689; /* Adjust the color as needed */
+  text-decoration: none;
+  padding-left: 20px; /* Spacing from the last navigation link */
+}
+
+.navigation .login-link i {
+  margin-right: 5px; /* Space between the icon and text */
+}

@@ -1,0 +1,39 @@
+<!-- <p>analyse-embryon works!</p> -->
+<!-- <app-header></app-header> -->
+<app-header></app-header>
+<div class="container" role="main">
+  <div class="logo-container">
+    <img src="assets/images/logo-pfa.png" alt="Logo" class="logo">
+  </div>
+  <h2 class="title">Analyse d'embryon</h2>
+  <div class="instructions">
+    <p><i class="fas fa-info-circle"></i> Avant de commencer, veuillez suivre ces étapes :</p>
+    <ul>
+      <li><i class="fas fa-upload"></i> Téléchargez votre image.</li>
+      <li><i class="fas fa-search"></i> Cliquez sur "Analyser l'embryon" pour obtenir les résultats.</li>
+    </ul>
+  </div>
+  <form (ngSubmit)="onSubmit()" #cvForm="ngForm" novalidate>
+    <div class="upload-section">
+      <label for="cvUpload"><i class="fas fa-file-upload"></i> Téléchargez votre image (format):</label>
+      <input type="file" (change)="onFileSelected($event)" id="cvUpload" name="cvUpload" required>
+      <div *ngIf="fileErrorMsg" class="error">{{ fileErrorMsg }}</div>
+    </div>
+    <button type="submit" class="btn-analyze"><i class="fas fa-analysis"></i> Analyser l'embryon</button>
+  </form>
+
+<!-- Display Results Dynamically -->
+<!-- <div *ngIf="analysisResults" class="mt-4">
+  <h3>Les Résultats de l'analyse : </h3>
+  <div *ngFor="let field of analysisResults.fields">
+    <div class="card">
+      <div class="card-header">{{ field.key | titlecase }}</div>
+      <div class="card-body">{{ field.value }}</div>
+    </div>
+  </div>
+  <div class="alert alert-success">
+    <strong>Les résultats:</strong> {{ analysisResults?.match_percentage }}<br>
+    <strong>Explanation:</strong> {{ analysisResults?.explanation }}
+  </div> -->
+
+</div>

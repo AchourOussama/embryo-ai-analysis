@@ -1,0 +1,124 @@
+.container {
+  max-width: 960px; /* Increase the maximum width */
+  margin: 2rem auto; /* Add more top and bottom margin */
+  padding: 2rem; /* Increase padding for more space inside */
+  background-color: #f4f4f8;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px; /* Adjust spacing as needed */
+}
+
+.logo {
+  max-width: 100px; /* Adjust size as needed */
+  height: auto;
+}
+
+
+.error {
+  color: #FF4136; /* Red color for errors */
+  margin-top: 5px;
+}
+
+.btn-analyze:disabled {
+  background-color: #ccc; /* Grayed out button when form is invalid */
+}
+
+.title {
+  color: #050B24;
+  text-align: center;
+  margin-bottom: 2rem; /* Add space below the title */
+  font-size: 2.5rem; /* Make the title larger */
+}
+.instructions {
+  margin-bottom: 2rem; /* Space before the form starts */
+  text-align: left; /* Center the instructions */
+}
+
+.upload-section, .description-section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem; /* Less space between form sections for a tighter look */
+
+  gap: 10px; /* Consistent spacing within sections */
+}
+
+
+label {
+  display: block; /* Ensure labels are block-level for better alignment */
+  margin-bottom: .5rem; /* Space between label and input/textarea */
+  color: #050B24; /* Dark color for contrast */
+  font-weight: 600; /* Make labels slightly bolder */
+}
+
+input[type="file"], textarea {
+  width: 100%; /* Full width for input and textarea */
+  padding: 12px; /* More padding for a larger touch area */
+  border: 1px solid #ccc; /* Subtle border */
+  border-radius: 4px; /* Rounded corners for inputs and textarea */
+  box-sizing: border-box; /* Ensure padding doesn't affect overall width */
+}
+
+textarea {
+  resize: vertical; /* Allows vertical resize only */
+}
+
+.btn-analyze {
+  background-color: #20afec;
+  color: white;
+  display: block; /* Or inline-block, if you prefer */
+  width: auto; /* Adjust width as needed, or set a specific width */
+  padding: 12px 25px; /* Balanced padding */
+  font-size: 1rem; /* Appropriate font size */
+  margin: 1rem auto; /* Top and bottom margin as needed, auto on the sides to center */
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Smoother transitions */
+}
+
+.btn-analyze:hover, .btn-analyze:focus {
+  background-color: #3086d6;
+  transform: translateY(-2px); /* Lift effect on hover for interactivity */
+  box-shadow: 0 4px 6px rgba(55, 255, 149, 0.2); /* Subtle shadow for depth */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    max-width: 100%; /* More fluid on smaller screens */
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  .title, .upload-section, .description-section {
+    text-align: left; /* Align elements to the left on smaller screens */
+  }
+
+  .btn-analyze {
+    display: block; /* Full width button for easier tapping on mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 24px; /* Adjust title size for very small screens */
+  }
+
+  .btn-analyze {
+    padding: 10px 20px; /* Adjust button padding for smaller screens */
+  }
+}
+
+
+/* In analyse-cv.component.css */
+.analysis-results {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
