@@ -13,14 +13,30 @@
       <li><i class="fas fa-search"></i> Cliquez sur "Analyser l'embryon" pour obtenir les résultats.</li>
     </ul>
   </div>
-  <form (ngSubmit)="onSubmit()" #cvForm="ngForm" novalidate>
+  <!-- <form (ngSubmit)="onSubmit()" #cvForm="ngForm" novalidate>
     <div class="upload-section">
       <label for="cvUpload"><i class="fas fa-file-upload"></i> Téléchargez votre image (format):</label>
       <input type="file" (change)="onFileSelected($event)" id="cvUpload" name="cvUpload" required>
+      
+      <img [src]="preview" class="preview" width="400" height="200">
       <div *ngIf="fileErrorMsg" class="error">{{ fileErrorMsg }}</div>
     </div>
     <button type="submit" class="btn-analyze"><i class="fas fa-analysis"></i> Analyser l'embryon</button>
-  </form>
+    <button *ngIf="preview" (click)="clearImage()">Clear Image</button>
+  </form> -->
+  <div class="upload-section">
+    <label for="cvUpload"><i class="fas fa-file-upload"></i> Téléchargez votre image (format):</label>
+    <input type="file" (change)="onFileSelected($event)" id="cvUpload" name="cvUpload" required>
+    
+    <img [src]="preview" class="preview" width="400" height="200">
+    <div>
+      <h2>Result: {{ embryo_result }}</h2>
+    </div>
+    <div *ngIf="fileErrorMsg" class="error">{{ fileErrorMsg }}</div>
+  </div>
+  <button *ngIf="preview" (click)="clearImage()">Clear Image</button>
+  <button type="button" (click)="onSubmit()" class="btn-analyze"><i class="fas fa-analysis"></i> Analyser l'embryon</button>
+  
 
 <!-- Display Results Dynamically -->
 <!-- <div *ngIf="analysisResults" class="mt-4">

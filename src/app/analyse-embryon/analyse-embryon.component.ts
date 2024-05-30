@@ -2,6 +2,9 @@ import { Component } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { EmbryoService } from '../embryo.service';
 import { FormsModule } from '@angular/forms';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
+import {API_URL} from '../env'
+import { FileUploadServiceService } from '../services/fileUpload/file-upload-service.service';
 
 @Component({
   selector: 'app-analyse-embryon',
@@ -11,46 +14,67 @@ import { FormsModule } from '@angular/forms';
 export class AnalyseEmbryonComponent {
   selectedFile: File | null = null;
   fileErrorMsg: string = '';
-  // analysisResults: any = null;
+  message: string |null=null;
+  imageUrl: string | null=null;
+  selectedFiles?: FileList;
+  progress = 0;
+  preview = '';
+  embryo_result: string |null=null;
 
-  constructor(private embryoService: EmbryoService,private toastr: ToastrService) {}
-
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      if (validTypes.includes(file.type)) {
-        this.selectedFile = file;
-      } else {
-        this.toastr.error('Unsupported file format. Please upload a PDF or DOCX file.', 'Error!');
-        this.selectedFile = null;
-      }
-    }
+  constructor(private embryoService: EmbryoService,private toastr: ToastrService,private fileUploadService:FileUploadServiceService,private http: HttpClient) {}
+  ngOnInit() {
+    this.fileUploadService.getData().subscribe((data: any) => {
+      this.message = data.message;
+      console.log(this.message)
+    });
+    
   }
 
+  onFileSelected(event: any): void {
+  
+      this.message = '';
+      this.preview = '';
+      this.progress = 0;
+      this.selectedFiles = event.target.files;
+
+      if (this.selectedFiles) {
+        const file: File | null = this.selectedFiles.item(0);
+
+        if (file) {
+          this.preview = '';
+          this.selectedFile = file;
+
+          const reader = new FileReader();
+
+          reader.onload = (e: any) => {
+            console.log(e.target.result);
+            this.preview = e.target.result;
+          };
+
+          reader.readAsDataURL(this.selectedFile);
+        }
+      }
+  }
+ 
+  clearImage() {
+    this.selectedFile = null;
+    this.preview = '';
+  }
   onSubmit(): void {
-    if ( !this.selectedFile) {
-      this.toastr.error('Please ensure all fields are filled correctly.', 'Missing Information!');
-      return;
+    
+    if(this.selectedFile){
+      console.log("file selected")
+      this.fileUploadService.uploadFile(this.selectedFile).subscribe((response)=>{
+      console.log('File uploaded successfully:', response);
+      this.embryo_result=response.image_with_result.result;
+      console.log('result:',this.embryo_result)
+      },
+      (error)=>{
+        console.log('Error uploading file:', error);
+      });
+
     }
 
-    const formData = new FormData();
-    formData.append('image', this.selectedFile);
-
-    this.embryoService.analyzeEmbryo(formData).subscribe({
-      next: (response) => {
-        console.log("Received data:", response);
-        // this.analysisResults = response;
-        this.toastr.success('Your embryo has been successfully analyzed!', 'Success');
-      },
-      error: (error) => {
-        console.error("Error:", error);
-        this.toastr.error('An error occurred while analyzing your embryo.', 'Error');
-      }
-    });
   }
 
 }
-
-
