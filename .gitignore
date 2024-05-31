@@ -42,5 +42,5 @@ testem.log
 Thumbs.db
 
 #backend 
-./backend/.venv
-./backend/output
+backend/.venv
+backend/output

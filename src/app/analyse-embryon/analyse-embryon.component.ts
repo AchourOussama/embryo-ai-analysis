@@ -58,7 +58,9 @@ export class AnalyseEmbryonComponent {
  
   clearImage() {
     this.selectedFile = null;
+    this.embryo_result=null;
     this.preview = '';
+
   }
   onSubmit(): void {
     
