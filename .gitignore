@@ -42,5 +42,6 @@ testem.log
 Thumbs.db
 
 #backend 
+backend/.env
 backend/.venv
 backend/output
