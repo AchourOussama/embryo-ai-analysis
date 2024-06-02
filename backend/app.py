@@ -27,11 +27,11 @@ UPLOAD_FOLDER = './input_images'
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-#Connecting to Bolb 
 
-#Connecting to SQL DB
-connection_string = os.environ["AZURE_SQL_CONNECTIONSTRING"]
-print("*********connection_string:\n",connection_string)
+#Connection strings to SQL DB and Blob Storage
+sql_connection_string = os.environ["AZURE_SQL_CONNECTION_STRING"]
+blob_connection_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING') 
+
 
 
 class Embryo(BaseModel):
@@ -73,7 +73,8 @@ def upload_image():
             embryo= Embryo(ImageName=filename,Result=result)
             saveToSQLDB(embryo)
 
-
+            #Retrieve image and result
+            # print(get_image_and_result(filename))
 
             # Embed the result with the image URL
             image_with_result = {'image':destination_file , 'result': result}
@@ -94,6 +95,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'jpg','png', 'jpeg','bmp'}
 
 def process_image(image_name):
+
     predict()
     # Load the results CSV file
     labled_results_csv_file='./results/labled_results_csv.csv'
@@ -105,12 +107,18 @@ def process_image(image_name):
     print(result)
     return result
 
-def saveToBlob(file,filepath):
-    connect_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING') # retrieve the connection string from the environment variable
-    container_name = "pictures" # container name in which images will be store in the storage account
 
-    blob_service_client = BlobServiceClient.from_connection_string(conn_str=connect_str) # create a blob service client to interact with the storage account
+# Function to establish connection to blob storage
+def get_blob_service_client():
+    # retrieve the connection string from the environment variable
+    return BlobServiceClient.from_connection_string(blob_connection_str)
+
+# retrieve the container name (in which images will be store in the storage account)  from the environment variable
+container_name = os.environ["CONTAINER_NAME"] 
+def saveToBlob(file,filepath):
+    blob_service_client=get_blob_service_client()
     try:
+
         container_client = blob_service_client.get_container_client(container=container_name) # get container client to interact with the container in which images will be stored
         container_client.get_container_properties() # get properties of the container to force exception to be thrown if container does not exist
     except Exception as e:
@@ -130,12 +138,14 @@ def saveToBlob(file,filepath):
 
 def saveToSQLDB(item: Embryo):
     print("********* saving data to DB .... ********* ")
+    #Environments variables to have access to Blob Storage
     sas_token=os.environ["SAS_TOKEN"]
     storage_account_url=os.environ["STORAGE_ACCOUNT_URL"]
 
     try:
         conn = get_conn()
         cursor = conn.cursor()
+        #Apparently this is why it doesn't recognize the storage account , the string being overwritten and null
         storage_account_url=""
 
         # Table should be created ahead of time in production app.
@@ -199,20 +209,103 @@ def saveToSQLDB(item: Embryo):
     # cursor.execute(sql)
 
     conn.commit()
-
-
-    
     return item
+
 def get_conn():
     credential = identity.DefaultAzureCredential(exclude_interactive_browser_credential=False)
     token_bytes = credential.get_token("https://database.windows.net/.default").token.encode("UTF-16-LE")
     token_struct = struct.pack(f'<I{len(token_bytes)}s', len(token_bytes), token_bytes)
     SQL_COPT_SS_ACCESS_TOKEN = 1256  # This connection option is defined by microsoft in msodbcsql.h
     print("********* connecting to sql db .... ********* ")
-    conn = pyodbc.connect(connection_string, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token_struct})
+    conn = pyodbc.connect(sql_connection_string, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token_struct})
     return conn
 
 
+# Function to retrieve all blobs (images) from Azure Blob Storage
+def list_blobs_in_container():
+    blob_service_client = get_blob_service_client()
+    container_client = blob_service_client.get_container_client(container_name)
+    blob_list = container_client.list_blobs()
+    return [blob.name for blob in blob_list]
+
+# Function to retrieve results from Azure SQL Database
+def get_all_results():
+    print("from get image from sql db")
+
+    conn = get_conn()
+    cursor = conn.cursor()
+    cursor.execute("SELECT ImageName, Result FROM EmbryoResults")
+    results = cursor.fetchall()
+    conn.close()
+    return {row.ImageName: row.Result for row in results}
+
+# API endpoint to list all images and their results
+@app.route('/images', methods=['GET'])
+def list_images_and_results():
+    try:
+        # Retrieve all blobs (images) from Azure Blob Storage
+        images = list_blobs_in_container()
+        
+        # Retrieve all results from Azure SQL Database
+        results = get_all_results()
+        
+        # Combine the data
+        response = []
+        for image in images:
+            response.append({
+                "image_name": image,
+                "result": results.get(image, "No result found")
+            })
+        
+        return jsonify(response), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    
+###  THIS DOESN'T WORK !! :   API endpoint to retrieve image and result
+
+# Function to retrieve image from Azure Blob Storage
+def get_image_from_blob(image_name):
+    print("from get image from blob")
+    blob_client = get_blob_service_client().get_blob_client(container=container_name, blob=image_name)
+    image_data = blob_client.download_blob().readall()
+    return image_data
+
+# Function to retrieve result from Azure SQL Database
+def get_result_from_db(image_name):
+    print("from get image from sql db")
+
+    conn = get_conn()
+    cursor = conn.cursor()
+    cursor.execute("SELECT Result FROM EmbryoResults WHERE ImageName = ?", image_name)
+    result = cursor.fetchone()[0]  # Assuming result is in the first column
+    conn.close()
+    return result
+
+@app.route('/image/<image_name>', methods=['GET'])
+def get_image_and_result(image_name):
+    print("from get_image_and_result method ")
+    print(image_name)
+    try:
+        # Retrieve image from Azure Blob Storage
+        image_data = get_image_from_blob(image_name)
+        
+        # Retrieve result from Azure SQL Database
+        result = get_result_from_db(image_name)
+        
+        # Return image and result as JSON response
+        response = {
+            "image_name": image_name,
+            "image_data": image_data,
+            "result": result
+        }
+        return jsonify({'message': 'Image retrieved successfully', 'response':response}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500    
+
+
+
+# This is are unused APIs
 
 @app.route('/get', methods=['GET'])
 def list():
@@ -226,8 +319,7 @@ def get_data():
     data = {'message': 'This is data from the Flask API'}
     return jsonify(data)
 
-# image_name='MTL-0130-1652-5E96-P09-FP4.jpg_0_0.bmp'
-# print('result:',process_image(image_name))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
