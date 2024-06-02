@@ -5,28 +5,41 @@ from model import predict
 from tensorflow.keras.models import load_model
 import pandas
 from werkzeug.utils import secure_filename
-# from keras.models import load_model
-import os
 
+import os
+from dotenv import load_dotenv
+#Blob
 from azure.storage.blob import BlobServiceClient
 
-# from dotenv import load_dotenv
+#SQL 
+import pyodbc, struct
+from azure import identity
+from typing import Union
+# from fastapi import FastAPI
+from pydantic import BaseModel
 
-# #loading .env to environment
-# load_dotenv()
+#loading .env to environment
+load_dotenv()
 
 app = Flask(__name__)
 cors = CORS(app)
 UPLOAD_FOLDER = './input_images'
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-#loading the model
-# MODEL_PATH="./models/Images_checkpoint.h5"
-# INPUT_PATH="./input_images/MTL-0130-1652-5E96-P09-FP4.jpg_0_0.bmp"
-# model = load_model(MODEL_PATH)
-# model.summary()
 
-# prediction=model.predict()
+#Connecting to Bolb 
+
+#Connecting to SQL DB
+connection_string = os.environ["AZURE_SQL_CONNECTIONSTRING"]
+print("*********connection_string:\n",connection_string)
+
+
+class Embryo(BaseModel):
+    
+    # ImageUrl: Union[str, None] = None
+    ImageName:str
+    Result: str
+
 
 @app.route('/')
 def index():
@@ -55,6 +68,12 @@ def upload_image():
 
             #processing the image 
             result = process_image(filename)
+
+            #saving image in sql db 
+            embryo= Embryo(ImageName=filename,Result=result)
+            saveToSQLDB(embryo)
+
+
 
             # Embed the result with the image URL
             image_with_result = {'image':destination_file , 'result': result}
@@ -108,6 +127,90 @@ def saveToBlob(file,filepath):
         print(e)
         print("Ignoring duplicate filenames") # ignore duplicate filenames
 
+
+def saveToSQLDB(item: Embryo):
+    print("********* saving data to DB .... ********* ")
+    sas_token=os.environ["SAS_TOKEN"]
+    storage_account_url=os.environ["STORAGE_ACCOUNT_URL"]
+
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        storage_account_url=""
+
+        # Table should be created ahead of time in production app.
+        cursor.execute("""
+
+            CREATE TABLE EmbryoResults (
+                Id INT NOT NULL PRIMARY KEY IDENTITY,
+                ImageName NVARCHAR(MAX), 
+                Result NVARCHAR(MAX)
+            );
+        """)
+        
+        conn.commit()
+
+        # This is two sql queries are for retrieving image url and storing it in DB
+
+        # #creating external Azure Blob data source 
+        # cursor.execute("""
+        #     CREATE DATABASE SCOPED CREDENTIAL sampleblobcred1
+        #         WITH IDENTITY = 'SHARED ACCESS SIGNATURE',
+        #         SECRET = ?;
+        # """,(sas_token,))
+        
+        # conn.commit()
+
+
+        # cursor.execute("""
+        #     CREATE EXTERNAL DATA SOURCE blobstorage
+        #     WITH (
+        #         TYPE = BLOB_STORAGE,
+        #         LOCATION = ?,
+        #         CREDENTIAL = sampleblobcred1);
+        #     """, (storage_account_url,))
+        
+        
+
+        # conn.commit()
+    except Exception as e:
+        # Table may already exist
+        print(e)
+
+    print("******* Inserting new row ... *********")
+    cursor.execute(f"INSERT INTO EmbryoResults (ImageName, Result) VALUES (?, ?)", item.ImageName, item.Result)
+    
+    # Insert image url into table from blob storage using parameterized query
+
+    # bulk="pictures/{}".format(item.ImageName)
+    # print("bulk",bulk)
+    # cursor.execute(f"INSERT INTO EmbryoResults (ImageUrl, ImageName, Result) VALUES ((SELECT BulkColumn FROM OPENROWSET(BULK ?,DATA_SOURCE = 'bolobstorage', SINGLE_BLOB) AS ImageFile), ?,?)", bulk, item.ImageName , item.Result)
+    # sql = """
+    # INSERT INTO EmbryoResults (ImageUrl) 
+    # VALUES (
+    #     (SELECT * FROM OPENROWSET(
+    #         BULK 'pictures/personal.jpeg', 
+    #         DATA_SOURCE = 'blobstorage', 
+    #         SINGLE_BLOB
+    #         ) AS ImageFile)
+        
+    # )
+    # """
+    # cursor.execute(sql)
+
+    conn.commit()
+
+
+    
+    return item
+def get_conn():
+    credential = identity.DefaultAzureCredential(exclude_interactive_browser_credential=False)
+    token_bytes = credential.get_token("https://database.windows.net/.default").token.encode("UTF-16-LE")
+    token_struct = struct.pack(f'<I{len(token_bytes)}s', len(token_bytes), token_bytes)
+    SQL_COPT_SS_ACCESS_TOKEN = 1256  # This connection option is defined by microsoft in msodbcsql.h
+    print("********* connecting to sql db .... ********* ")
+    conn = pyodbc.connect(connection_string, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token_struct})
+    return conn
 
 
 
