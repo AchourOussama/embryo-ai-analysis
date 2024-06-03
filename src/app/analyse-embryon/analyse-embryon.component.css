@@ -69,6 +69,18 @@ textarea {
   resize: vertical; /* Allows vertical resize only */
 }
 
+.btn-clear {
+  background-color: #f44336; /* Red background for clear button */
+  color: white;
+  display: block;
+  width: auto;
+  padding: 12px 25px;
+  font-size: 1rem;
+  margin: 1rem auto;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
 .btn-analyze {
   background-color: #20afec;
   color: white;
@@ -81,7 +93,7 @@ textarea {
   transition: background-color 0.3s ease, transform 0.2s ease; /* Smoother transitions */
 }
 
-.btn-analyze:hover, .btn-analyze:focus {
+.btn-analyze:hover, .btn-analyze:focus .btn-clear:hover, .btn-clear:focus {
   background-color: #3086d6;
   transform: translateY(-2px); /* Lift effect on hover for interactivity */
   box-shadow: 0 4px 6px rgba(55, 255, 149, 0.2); /* Subtle shadow for depth */
@@ -99,7 +111,7 @@ textarea {
     text-align: left; /* Align elements to the left on smaller screens */
   }
 
-  .btn-analyze {
+  .btn-analyze .btn-clear{
     display: block; /* Full width button for easier tapping on mobile */
   }
 }
@@ -109,7 +121,7 @@ textarea {
     font-size: 24px; /* Adjust title size for very small screens */
   }
 
-  .btn-analyze {
+  .btn-analyze .btn-clear{
     padding: 10px 20px; /* Adjust button padding for smaller screens */
   }
 }

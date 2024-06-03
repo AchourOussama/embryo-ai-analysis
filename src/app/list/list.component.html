@@ -1,0 +1,29 @@
+<div class="container">
+  <h2>Your Analyzed Embryo</h2>
+  <div *ngIf="analysisResults">
+    <div class="image-container">
+      <img [src]="analysisResults.imageUrl" alt="Uploaded Embryo Image">
+    </div>
+    <div class="results">
+      <strong>Score:</strong>
+      <div *ngIf="analysisResults?.score">
+          <span *ngFor="let percentage of analysisResults.score; let i = index">
+              {{ percentage }}%<span *ngIf="i < analysisResults.score.length - 1">, </span>
+          </span>
+      </div>
+      <br>
+      <strong>Class:</strong> {{ analysisResults?.class }}
+  </div>
+
+    <div class="masks-container">
+      <h4>Predicted Masks:</h4>
+      <div class="mask" *ngFor="let mask of analysisResults?.masks">
+        <img [src]="mask" alt="Predicted Mask">
+      </div>
+    </div>
+    <div class="comments-section">
+      <h3>Notes:</h3>
+      <textarea [(ngModel)]="notes" placeholder="Add your comments here..."></textarea>
+    </div>
+  </div>
+</div>

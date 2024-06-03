@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
-import { EmbryoService } from '../embryo.service';
+// import { EmbryoService } from '../embryo.service';
 import { FormsModule } from '@angular/forms';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {API_URL} from '../env'
@@ -21,7 +21,7 @@ export class AnalyseEmbryonComponent {
   preview = '';
   embryo_result: string |null=null;
 
-  constructor(private embryoService: EmbryoService,private toastr: ToastrService,private fileUploadService:FileUploadServiceService,private http: HttpClient) {}
+  constructor(private toastr: ToastrService,private fileUploadService:FileUploadServiceService,private http: HttpClient) {}
   ngOnInit() {
     this.fileUploadService.getData().subscribe((data: any) => {
       this.message = data.message;

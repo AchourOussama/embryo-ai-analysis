@@ -34,7 +34,7 @@
     </div>
     <div *ngIf="fileErrorMsg" class="error">{{ fileErrorMsg }}</div>
   </div>
-  <button *ngIf="preview" (click)="clearImage()">Clear Image</button>
+  <button *ngIf="preview" (click)="clearImage()" class="btn-clear">Clear Image</button>
   <button type="button" (click)="onSubmit()" class="btn-analyze"><i class="fas fa-analysis"></i> Analyser l'embryon</button>
   
 
