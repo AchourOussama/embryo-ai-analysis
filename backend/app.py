@@ -11,12 +11,19 @@ from dotenv import load_dotenv
 #Blob
 from azure.storage.blob import BlobServiceClient
 
-#SQL 
+#SQL
 import pyodbc, struct
 from azure import identity
 from typing import Union
 # from fastapi import FastAPI
 from pydantic import BaseModel
+
+#for connecting with service principal
+import msal
+import adal
+
+
+
 
 #loading .env to environment
 load_dotenv()
@@ -30,12 +37,12 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 #Connection strings to SQL DB and Blob Storage
 sql_connection_string = os.environ["AZURE_SQL_CONNECTION_STRING"]
-blob_connection_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING') 
+blob_connection_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
 
 
 
 class Embryo(BaseModel):
-    
+
     # ImageUrl: Union[str, None] = None
     ImageName:str
     Result: str
@@ -59,17 +66,17 @@ def upload_image():
         if uploaded_file and allowed_file(uploaded_file.filename):
             filename = secure_filename(uploaded_file.filename)
             destination_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            
+
             #saving image locally
             uploaded_file.save(destination_file)
 
-            #saving image in blob 
+            #saving image in blob
             saveToBlob(uploaded_file,destination_file)
 
-            #processing the image 
+            #processing the image
             result = process_image(filename)
 
-            #saving image in sql db 
+            #saving image in sql db
             embryo= Embryo(ImageName=filename,Result=result)
             saveToSQLDB(embryo)
 
@@ -114,7 +121,7 @@ def get_blob_service_client():
     return BlobServiceClient.from_connection_string(blob_connection_str)
 
 # retrieve the container name (in which images will be store in the storage account)  from the environment variable
-container_name = os.environ["CONTAINER_NAME"] 
+container_name = os.environ["CONTAINER_NAME"]
 def saveToBlob(file,filepath):
     blob_service_client=get_blob_service_client()
     try:
@@ -125,7 +132,7 @@ def saveToBlob(file,filepath):
         print(e)
         print("Creating container...")
         container_client = blob_service_client.create_container(container_name) # create a container in the storage account if it does not exist
-    
+
     try:
         with open(file=filepath, mode="rb") as data:
             print("before blob")
@@ -143,32 +150,34 @@ def saveToSQLDB(item: Embryo):
     storage_account_url=os.environ["STORAGE_ACCOUNT_URL"]
 
     try:
-        conn = get_conn()
+        
+        # conn = get_conn()
+        conn=connect_oauth()
         cursor = conn.cursor()
+
         #Apparently this is why it doesn't recognize the storage account , the string being overwritten and null
-        storage_account_url=""
 
         # Table should be created ahead of time in production app.
-        cursor.execute("""
+        # cursor.execute("""
 
-            CREATE TABLE EmbryoResults (
-                Id INT NOT NULL PRIMARY KEY IDENTITY,
-                ImageName NVARCHAR(MAX), 
-                Result NVARCHAR(MAX)
-            );
-        """)
-        
+        #     CREATE TABLE EmbryoResults (
+        #         Id INT NOT NULL PRIMARY KEY IDENTITY,
+        #         ImageName NVARCHAR(MAX),
+        #         Result NVARCHAR(MAX)
+        #     );
+        # """)
+
         conn.commit()
 
         # This is two sql queries are for retrieving image url and storing it in DB
 
-        # #creating external Azure Blob data source 
+        # #creating external Azure Blob data source
         # cursor.execute("""
         #     CREATE DATABASE SCOPED CREDENTIAL sampleblobcred1
         #         WITH IDENTITY = 'SHARED ACCESS SIGNATURE',
         #         SECRET = ?;
         # """,(sas_token,))
-        
+
         # conn.commit()
 
 
@@ -179,8 +188,8 @@ def saveToSQLDB(item: Embryo):
         #         LOCATION = ?,
         #         CREDENTIAL = sampleblobcred1);
         #     """, (storage_account_url,))
-        
-        
+
+
 
         # conn.commit()
     except Exception as e:
@@ -189,21 +198,21 @@ def saveToSQLDB(item: Embryo):
 
     print("******* Inserting new row ... *********")
     cursor.execute(f"INSERT INTO EmbryoResults (ImageName, Result) VALUES (?, ?)", item.ImageName, item.Result)
-    
+
     # Insert image url into table from blob storage using parameterized query
 
     # bulk="pictures/{}".format(item.ImageName)
     # print("bulk",bulk)
     # cursor.execute(f"INSERT INTO EmbryoResults (ImageUrl, ImageName, Result) VALUES ((SELECT BulkColumn FROM OPENROWSET(BULK ?,DATA_SOURCE = 'bolobstorage', SINGLE_BLOB) AS ImageFile), ?,?)", bulk, item.ImageName , item.Result)
     # sql = """
-    # INSERT INTO EmbryoResults (ImageUrl) 
+    # INSERT INTO EmbryoResults (ImageUrl)
     # VALUES (
     #     (SELECT * FROM OPENROWSET(
-    #         BULK 'pictures/personal.jpeg', 
-    #         DATA_SOURCE = 'blobstorage', 
+    #         BULK 'pictures/personal.jpeg',
+    #         DATA_SOURCE = 'blobstorage',
     #         SINGLE_BLOB
     #         ) AS ImageFile)
-        
+
     # )
     # """
     # cursor.execute(sql)
@@ -211,6 +220,7 @@ def saveToSQLDB(item: Embryo):
     conn.commit()
     return item
 
+### connected with sql db in default way
 def get_conn():
     credential = identity.DefaultAzureCredential(exclude_interactive_browser_credential=False)
     token_bytes = credential.get_token("https://database.windows.net/.default").token.encode("UTF-16-LE")
@@ -220,6 +230,32 @@ def get_conn():
     conn = pyodbc.connect(sql_connection_string, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token_struct})
     return conn
 
+### connected with sql db using service principal 
+def connect_oauth():
+    tenant_id = os.environ.get('AZURE_TENANT_ID')
+    clientId = os.environ.get('AZURE_CLIENT_ID')
+    clientSecret = os.environ.get('AZURE_CLIENT_SECRET')
+    server = os.environ.get('SQL_SERVER')
+    database = os.environ.get('SQL_DATABASE')
+    print(tenant_id,clientId,clientSecret,server,database)
+    
+    authorityHostUrl = "https://login.microsoftonline.com"
+    authority_url = authorityHostUrl + "/" + tenant_id
+    context = adal.AuthenticationContext(authority_url,   api_version=None)
+    token = context.acquire_token_with_client_credentials("https://database.windows.net/", clientId, clientSecret)
+    driver = "{ODBC Driver 18 for SQL Server}"
+    #   conn_str = "DRIVER=" + driver + ";server=" + server + ";database="+ database
+    conn_str=sql_connection_string
+    print("connection string",conn_str)
+    SQL_COPT_SS_ACCESS_TOKEN = 1256
+    tokenb = bytes(token["accessToken"], "UTF-8")
+    exptoken = b''
+    for i in tokenb:
+        exptoken += bytes({i})
+        exptoken += bytes(1)
+    tokenstruct = struct.pack("=i", len(exptoken)) + exptoken
+    conn = pyodbc.connect(conn_str, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: tokenstruct})
+    return conn
 
 # Function to retrieve all blobs (images) from Azure Blob Storage
 def list_blobs_in_container():
@@ -245,10 +281,10 @@ def list_images_and_results():
     try:
         # Retrieve all blobs (images) from Azure Blob Storage
         images = list_blobs_in_container()
-        
+
         # Retrieve all results from Azure SQL Database
         results = get_all_results()
-        
+
         # Combine the data
         response = []
         for image in images:
@@ -256,12 +292,12 @@ def list_images_and_results():
                 "image_name": image,
                 "result": results.get(image, "No result found")
             })
-        
+
         return jsonify(response), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    
+
 ###  THIS DOESN'T WORK !! :   API endpoint to retrieve image and result
 
 # Function to retrieve image from Azure Blob Storage
@@ -289,10 +325,10 @@ def get_image_and_result(image_name):
     try:
         # Retrieve image from Azure Blob Storage
         image_data = get_image_from_blob(image_name)
-        
+
         # Retrieve result from Azure SQL Database
         result = get_result_from_db(image_name)
-        
+
         # Return image and result as JSON response
         response = {
             "image_name": image_name,
@@ -301,7 +337,7 @@ def get_image_and_result(image_name):
         }
         return jsonify({'message': 'Image retrieved successfully', 'response':response}), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500    
+        return jsonify({"error": str(e)}), 500
 
 
 

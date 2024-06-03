@@ -56,6 +56,7 @@ def predict():
     model = load_model(MODEL_PATH)
     model.summary()
     predictions=model.predict(test_images)
+    print("******** predictions: ",predictions)
 
     # Get predicted classes
     predicted_classes = np.argmax(predictions, axis=1)
