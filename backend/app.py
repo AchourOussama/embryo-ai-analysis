@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, request, jsonify
+from flask import Flask, Blueprint, request, jsonify,send_from_directory
 from flask_cors import CORS, cross_origin
 
 from model import predict
@@ -46,6 +46,8 @@ class Embryo(BaseModel):
     # ImageUrl: Union[str, None] = None
     ImageName:str
     Result: str
+    suggested_value:Union[str, None] = None
+    note:Union[str, None] = None
 
 
 @app.route('/')
@@ -77,7 +79,7 @@ def upload_image():
             result = process_image(filename)
 
             #saving image in sql db
-            embryo= Embryo(ImageName=filename,Result=result)
+            embryo= Embryo(ImageName=filename,Result=result,suggested_value=None,note=None)
             saveToSQLDB(embryo)
 
             #Retrieve image and result
@@ -158,14 +160,16 @@ def saveToSQLDB(item: Embryo):
         #Apparently this is why it doesn't recognize the storage account , the string being overwritten and null
 
         # Table should be created ahead of time in production app.
-        # cursor.execute("""
+        cursor.execute("""
 
-        #     CREATE TABLE EmbryoResults (
-        #         Id INT NOT NULL PRIMARY KEY IDENTITY,
-        #         ImageName NVARCHAR(MAX),
-        #         Result NVARCHAR(MAX)
-        #     );
-        # """)
+            CREATE TABLE EmbryoResults (
+                Id INT NOT NULL PRIMARY KEY IDENTITY,
+                ImageName NVARCHAR(MAX),
+                Result NVARCHAR(MAX),
+                SuggestedValue NVARCHAR(MAX) NULL,
+                Note NVARCHAR(MAX) NULL
+            );
+        """)
 
         conn.commit()
 
@@ -197,7 +201,7 @@ def saveToSQLDB(item: Embryo):
         print(e)
 
     print("******* Inserting new row ... *********")
-    cursor.execute(f"INSERT INTO EmbryoResults (ImageName, Result) VALUES (?, ?)", item.ImageName, item.Result)
+    cursor.execute(f"INSERT INTO EmbryoResults (ImageName, Result,SuggestedValue,Note) VALUES (?,?,?,?)", item.ImageName, item.Result,item.suggested_value,item.note)
 
     # Insert image url into table from blob storage using parameterized query
 
@@ -270,11 +274,22 @@ def get_all_results():
 
     conn = get_conn()
     cursor = conn.cursor()
-    cursor.execute("SELECT ImageName, Result FROM EmbryoResults")
-    results = cursor.fetchall()
+    cursor.execute("SELECT ImageName, Result, SuggestedValue, Note FROM EmbryoResults")
+    rows = cursor.fetchall()
+    print("rows",rows)
     conn.close()
-    return {row.ImageName: row.Result for row in results}
+    # return {row.ImageName: row.Result for row in results}
+    results = {}
 
+    for row in rows:
+        results[row.ImageName] = {
+            'result': row.Result,
+            'suggested_value': row.SuggestedValue,
+            'note': row.Note
+        }
+    print("results",results)
+
+    return results
 # API endpoint to list all images and their results
 @app.route('/images', methods=['GET'])
 def list_images_and_results():
@@ -287,15 +302,92 @@ def list_images_and_results():
 
         # Combine the data
         response = []
+        # for image in images:
+        #     # destination_file = os.path.join(app.config['UPLOAD_FOLDER'], image)
+
+        #     response.append({
+        #         "image_name":image,
+        #         "image_path": f"http://localhost:5000/images/{image}",
+        #         "result": results.get(image, "No result found")
+        #     })
+        print("results",results)
         for image in images:
+            result_data = results.get(image, {
+                'result': "No result found",
+                'suggested_value': None,
+                'note': None
+                })
             response.append({
                 "image_name": image,
-                "result": results.get(image, "No result found")
+                "image_path": f"http://localhost:5000/images/{image}",
+                "result": result_data['result'],
+                "suggested_value": result_data['suggested_value'],
+                "note": result_data['note']
             })
 
         return jsonify(response), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/images/<path:filename>')
+def get_image(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
+@app.route('/update', methods=['POST'])
+def update_embryo():
+    data = request.json
+    print(data)
+    image_name=data['image_name']
+    suggested_value = data['suggested_value']
+    result=data['result']
+    note = data['note']
+    try:
+        conn = connect_oauth()
+        cursor = conn.cursor()
+
+        # Check if the embryo exists
+        cursor.execute("SELECT * FROM EmbryoResults WHERE ImageName = ?", (image_name,))
+        embryo = cursor.fetchone()
+
+        if not embryo:
+            return jsonify({'error': 'Embryo not found'}), 404
+
+    # Update the embryo with new values
+        cursor.execute("""
+            UPDATE EmbryoResults
+            SET Result = ?, SuggestedValue = ?, Note = ?
+            WHERE ImageName = ?""", (result, suggested_value, note, image_name)
+             
+            )
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({'message': 'Embryo updated successfully'}), 200
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+            conn.close()
+        return jsonify({'error': str(e)}), 500
+
+
+
+
+    # # Retrieve the embryo from the database based on the image name
+    # embryo = Embryo.query.filter_by(image_name=data['image_name']).first()
+    # if not embryo:
+    #     return jsonify({'error': 'Embryo not found'}), 404
+
+    # Update the note and suggested value
+
+    # # Save the changes to the database
+    # db.session.commit()
+
+    # update_embryo=Embryo(ImageName=image_name,Result=result,SuggestedValue=suggested_value,Note=note)
+    # saveToSQLDB(update_embryo)
+
+    # return jsonify({'message': 'Embryo updated successfully'}), 200    
 
 
 ###  THIS DOESN'T WORK !! :   API endpoint to retrieve image and result

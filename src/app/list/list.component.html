@@ -2,51 +2,43 @@
 <div *ngIf="!error && analysisResults.length === 0">No embryo images found.</div>
 <div *ngIf="analysisResults.length > 0">
   <ul>
-    <li *ngFor="let embryo of analysisResults">
+    <li *ngFor="let embryo of analysisResults" class="embryo-item">
       <div class="container">
         <h2>Your Analyzed Embryo</h2>
-        <div *ngIf="embryo">
+        <div *ngIf="embryo" class="embryo-details">
           <div class="image-container">
             <img [src]="embryo.image_path" alt="Uploaded Embryo Image">
-            {{embryo.image_name}}
+            <div class="image-name">{{ embryo.image_name }}</div>
           </div>
-    
-          <div class="results">
-            <strong>Score:</strong> {{ embryo.result }}<br>
-          </div>
-          <div class="comments-section">
-            <h3>Notes:</h3>
-            <textarea [(ngModel)]="notes[embryo.image_path]" placeholder="Add your comments here..."></textarea>
-          </div>
-          <div class="dropdown-section">
-            <h3>Select a Value:</h3>
-            <select [(ngModel)]="selectedValues[embryo.image_path]">
-              <option *ngFor="let value of suggestedValues" [value]="value">{{ value }}</option>
-            </select>
-          </div>
-          <div class="button-section">
-            <button (click)="validateAndPostForm(embryo)">Validate Form</button>
+          <div class="result-container">
+            <div class="results">
+              <strong>Score:</strong> {{ embryo.result }}
+            </div>
+            <div class="results">
+              <strong>Note:</strong> {{ embryo.note }}
+            </div>
+            <div class="results">
+              <strong>Suggested Value:</strong> {{ embryo.suggested_value }}
+            </div>
+            <div class="form-section">
+              <h3>Update Details:</h3>
+              <div class="form-field">
+                <label>Note:</label>
+                <textarea [(ngModel)]="notes[embryo.image_path]" placeholder="Add your comments here..."></textarea>
+              </div>
+              <div class="form-field">
+                <label>Select a Value:</label>
+                <select [(ngModel)]="selectedValues[embryo.image_path]">
+                  <option *ngFor="let value of suggestedValues" [value]="value">{{ value }}</option>
+                </select>
+              </div>
+              <div class="button-section">
+                <button (click)="validateAndPostForm(embryo)">Validate Form</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </li>
   </ul>
 </div>
-
-
-<!-- <div class="container">
-  <h2>Your Analyzed Embryo</h2>
-  <div *ngIf="analysisResults">
-    <div class="image-container">
-      <img [src]="analysisResults.imageUrl" alt="Uploaded Embryo Image">
-    </div>
-    <div class="results">
-      <strong>Score:</strong> {{ analysisResults?.score }}<br>
-      <strong>Class:</strong> {{ analysisResults?.class }}
-    </div>
-    <div class="comments-section">
-      <h3>Notes:</h3>
-      <textarea [(ngModel)]="notes" placeholder="Add your comments here..."></textarea>
-    </div>
-  </div>
-</div> -->

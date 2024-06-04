@@ -5,9 +5,11 @@ import { HttpClient } from '@angular/common/http';
 
 
 interface EmbryoImageResult {
-  image_name:string;
-  image_path: string;
+  image_path:string;
+  image_name: string;
   result: string;
+  suggested_value: string;
+  note: string;
 }
 interface EmbryoFormData {
   image_path: string;
@@ -25,7 +27,7 @@ export class ListComponent implements OnInit {
   error: string | null = null;
   notes: { [key: string]: string } = {};
 
-  suggestedValues: string[] = ['Value 1', 'Value 2', 'Value 3'];
+  suggestedValues: string[] = ['poor', 'average', 'good'];
   selectedValues: { [key: string]: string } = {};
 
   constructor(private embryonService: EmbryonService, private http: HttpClient) { }

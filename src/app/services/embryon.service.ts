@@ -5,13 +5,16 @@ import { API_URL } from 'src/app/env';
 
 
 interface EmbryoImageResult {
-  image_name:string;
-  image_path: string;
+  image_path:string;
+  image_name: string;
   result: string;
+  suggested_value: string;
+  note: string;
 }
 
 interface EmbryoFormData {
-  image_path: string;
+  image_name: string;
+  result: string;
   suggested_value: string;
   note: string;
 }
@@ -39,7 +42,8 @@ export class EmbryonService {
 
     // })
     const formData: EmbryoFormData = {
-      image_path: embryo.image_path,
+      image_name: embryo.image_name,
+      result:embryo.result,
       suggested_value: selectedValue,
       note: note.trim()
     };

@@ -1,79 +1,83 @@
+.error {
+  color: red;
+}
+
 .container {
-  max-width: 960px; /* Increase the maximum width */
-  margin: 2rem auto; /* Add more top and bottom margin */
-  padding: 2rem; /* Increase padding for more space inside */
-  background-color: #f4f4f8;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.embryo-details {
+  display: flex;
+  align-items: flex-start;
+}
+
+.image-container {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .image-container img {
-  width: 100%;
-  max-width: 400px;
-  display: block;
-  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.image-name {
+  margin-top: 5px;
+}
+
+.result-container {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  margin-left: 20px;
 }
 
 .results {
-  margin-top: 20px;
-  font-size: 1.2em;
-}
-
-.masks-container {
-  margin-top: 20px;
-}
-
-.masks-container h4 {
   margin-bottom: 10px;
 }
 
-.mask {
+.form-section {
+  margin-top: 20px;
+}
+
+.form-field {
   margin-bottom: 10px;
 }
 
-.mask img {
-  width: 100%;
-  max-width: 400px;
+.form-field label {
   display: block;
-  margin: 0 auto;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
 
-.comments-section {
-  margin-top: 20px;
-}
-
-textarea {
+.form-field textarea,
+.form-field select {
   width: 100%;
-  height: 100px;
-  padding: 10px;
-  font-size: 1em;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  resize: vertical;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .container {
-    max-width: 100%; /* More fluid on smaller screens */
-    margin: 1rem;
-    padding: 1rem;
-  }
-
-  .results, .comments-section {
-    text-align: left; /* Align elements to the left on smaller screens */
-  }
+.button-section {
+  margin-top: 10px;
 }
 
-@media (max-width: 480px) {
-  .results {
-    font-size: 1em; /* Adjust font size for very small screens */
-  }
+.button-section button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
-  textarea {
-    padding: 10px 10px; /* Adjust textarea padding for smaller screens */
-  }
+.button-section button:hover {
+  background-color: #0056b3;
 }
