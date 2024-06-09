@@ -45,3 +45,14 @@ Thumbs.db
 backend/.env
 backend/.venv
 backend/output
+backend/__pycache__/
+
+#models
+backend/models/
+
+#node modules
+node_modules
+
+#angular
+.angular
+package-lock.json
