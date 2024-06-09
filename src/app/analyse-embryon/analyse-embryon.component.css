@@ -1,136 +1,226 @@
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
 .container {
-  max-width: 960px; /* Increase the maximum width */
-  margin: 2rem auto; /* Add more top and bottom margin */
-  padding: 2rem; /* Increase padding for more space inside */
+  max-width: 1200px;
+  margin: 0 auto;  
+  padding: 2rem;
   background-color: #f4f4f8;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
 }
+.percentages_container{
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row
+  
+}
+.image-wrapper {
+  display: flex;
+  justify-content: space-between;
+}
+
+.result-container {
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.result-container h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+.predicted-class-container {
+  display: flex;
+  align-items: center; /* Vertically align items if necessary */
+  gap: 10px; /* Adjust the gap between the two elements as needed */
+  margin-bottom: 15px;
+  /* font-size: 1.2em; */
+  color: #333;
+  margin-top: 20px;
+  padding: 1rem;
+  /* background-color: #f9fafb; */
+  border-radius: 10px;
+}
+.predicted-class{
+  text-transform: uppercase;
+
+}
+
+.preview {
+  max-width: 100%;
+  width: 400px;
+  height: 400px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-top: 1rem;
+}
+
+.error {
+  color: #FF4136;
+  font-size: 1.1em;
+  margin-top: 5px;
+  text-align: center;
+}
 
 .logo-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px; /* Adjust spacing as needed */
+  margin-bottom: 20px;
 }
 
 .logo {
-  max-width: 100px; /* Adjust size as needed */
+  max-width: 100px;
   height: auto;
-}
-
-
-.error {
-  color: #FF4136; /* Red color for errors */
-  margin-top: 5px;
-}
-
-.btn-analyze:disabled {
-  background-color: #ccc; /* Grayed out button when form is invalid */
 }
 
 .title {
   color: #050B24;
   text-align: center;
-  margin-bottom: 2rem; /* Add space below the title */
-  font-size: 2.5rem; /* Make the title larger */
-}
-.instructions {
-  margin-bottom: 2rem; /* Space before the form starts */
-  text-align: left; /* Center the instructions */
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
 }
 
-.upload-section, .description-section {
+.instructions {
+  margin-bottom: 2rem;
+  text-align: left;
+  
+}
+
+.upload-section {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1.5rem; /* Less space between form sections for a tighter look */
-
-  gap: 10px; /* Consistent spacing within sections */
+  margin-bottom: 1.5rem;
+  gap: 10px;
+}
+.instructions, .upload-section, .progress-bar {
+  font-size: 1.5rem; /* Adjust the font size as needed */
 }
 
-
 label {
-  display: block; /* Ensure labels are block-level for better alignment */
-  margin-bottom: .5rem; /* Space between label and input/textarea */
-  color: #050B24; /* Dark color for contrast */
-  font-weight: 600; /* Make labels slightly bolder */
+  display: block;
+  margin-bottom: .5rem;
+  color: #050B24;
+  font-weight: 600;
 }
 
 input[type="file"], textarea {
-  width: 100%; /* Full width for input and textarea */
-  padding: 12px; /* More padding for a larger touch area */
-  border: 1px solid #ccc; /* Subtle border */
-  border-radius: 4px; /* Rounded corners for inputs and textarea */
-  box-sizing: border-box; /* Ensure padding doesn't affect overall width */
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
 }
 
 textarea {
-  resize: vertical; /* Allows vertical resize only */
+  resize: vertical;
 }
 
-.btn-clear {
-  background-color: #f44336; /* Red background for clear button */
-  color: white;
+.btn-clear, .btn-analyze {
   display: block;
   width: auto;
   padding: 12px 25px;
-  font-size: 1rem;
+  font-size: 1.5rem;
   margin: 1rem auto;
   cursor: pointer;
+  border: none;
+  border-radius: 5px;
   transition: background-color 0.3s ease, transform 0.2s ease;
+  color: white;
+}
+
+.btn-clear {
+  background-color: #f44336;
 }
 
 .btn-analyze {
   background-color: #20afec;
-  color: white;
-  display: block; /* Or inline-block, if you prefer */
-  width: auto; /* Adjust width as needed, or set a specific width */
-  padding: 12px 25px; /* Balanced padding */
-  font-size: 1rem; /* Appropriate font size */
-  margin: 1rem auto; /* Top and bottom margin as needed, auto on the sides to center */
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease; /* Smoother transitions */
 }
 
-.btn-analyze:hover, .btn-analyze:focus .btn-clear:hover, .btn-clear:focus {
+.btn-clear:hover, .btn-clear:focus, .btn-analyze:hover, .btn-analyze:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(55, 255, 149, 0.2);
+}
+
+.btn-clear:hover, .btn-clear:focus {
+  background-color: #d32f2f;
+}
+
+.btn-analyze:hover, .btn-analyze:focus {
   background-color: #3086d6;
-  transform: translateY(-2px); /* Lift effect on hover for interactivity */
-  box-shadow: 0 4px 6px rgba(55, 255, 149, 0.2); /* Subtle shadow for depth */
 }
 
-/* Responsive Design */
+.circular-chart-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px;
+}
+
+.circular-chart {
+  display: block;
+  margin: 0 auto;
+}
+
+.circle {
+  fill: none;
+  stroke: #4caf50;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.3s ease;
+}
+
+.percentage-value {
+  font-size: 1.2rem;
+}
+
+.progress-bar {
+  width: 100%;
+  background-color: #f3f3f3;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-bar-fill {
+  height: 10px;
+  background-color: #20afec;
+  width: 0;
+  transition: width 0.5s;
+}
+
 @media (max-width: 768px) {
   .container {
-    max-width: 100%; /* More fluid on smaller screens */
+    max-width: 100%;
     margin: 1rem;
     padding: 1rem;
   }
 
-  .title, .upload-section, .description-section {
-    text-align: left; /* Align elements to the left on smaller screens */
+  .title, .upload-section {
+    text-align: left;
   }
 
-  .btn-analyze .btn-clear{
-    display: block; /* Full width button for easier tapping on mobile */
+  .btn-clear, .btn-analyze {
+    width: 100%;
   }
 }
 
 @media (max-width: 480px) {
   .title {
-    font-size: 24px; /* Adjust title size for very small screens */
+    font-size: 24px;
   }
 
-  .btn-analyze .btn-clear{
-    padding: 10px 20px; /* Adjust button padding for smaller screens */
+  .btn-clear, .btn-analyze {
+    padding: 10px 20px;
   }
 }
 
-
-/* In analyse-cv.component.css */
-.analysis-results {
-  margin-top: 20px;
-  padding: 15px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+@keyframes progress {
+  0% {
+    stroke-dasharray: 0 100;
+  }
 }

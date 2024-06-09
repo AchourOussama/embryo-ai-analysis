@@ -5,16 +5,19 @@ import { API_URL } from 'src/app/env';
 
 
 interface EmbryoImageResult {
-  image_path:string;
   image_name: string;
-  result: string;
+  image_path:string;
+  segmented_image_path:string;
+  predicted_class: string;
+  predicted_probabilities:string;
   suggested_value: string;
   note: string;
 }
 
 interface EmbryoFormData {
   image_name: string;
-  result: string;
+  predicted_class: string;
+  predicted_probabilities:string;
   suggested_value: string;
   note: string;
 }
@@ -28,26 +31,22 @@ export class EmbryonService {
     return this.http.get<EmbryoImageResult[]>(`${API_URL}/images`)  ;
   }
 
+
   validateAndPostFormData(embryo: EmbryoImageResult, selectedValue: string, note: string): void {
     if (!selectedValue && !note?.trim()) {
       alert('Please select a value from the dropdown or add a comment.');
       return;
     }
 
-    // const formData=new FormData()
-    // formData.append({
-    //   image_path: embryo.image_path,
-    //   suggested_value: selectedValue,
-    //   note: note.trim()
 
-    // })
     const formData: EmbryoFormData = {
       image_name: embryo.image_name,
-      result:embryo.result,
+      predicted_class:embryo.predicted_class,
+      predicted_probabilities:JSON.stringify(embryo.predicted_probabilities),
       suggested_value: selectedValue,
       note: note.trim()
     };
-    console.log(formData)
+    console.log("this is ",formData)
   
     this.http.post(`${API_URL}/update`, formData);
     this.http.post<any>(`${API_URL}/update`, formData).subscribe(

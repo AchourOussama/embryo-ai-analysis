@@ -1,55 +1,198 @@
-<!-- <p>analyse-embryon works!</p> -->
-<!-- <app-header></app-header> -->
 <app-header></app-header>
-<div class="container" role="main">
-  <div class="logo-container">
-    <img src="assets/images/logo-pfa.png" alt="Logo" class="logo">
+<div class="container mx-auto p-6">
+  <div class="logo-container flex justify-center mb-6">
+    <img src="assets/images/logo-pfa.png" alt="Logo" class="logo w-24 h-auto">
   </div>
-  <h2 class="title">Analyse d'embryon</h2>
-  <div class="instructions">
-    <p><i class="fas fa-info-circle"></i> Avant de commencer, veuillez suivre ces étapes :</p>
-    <ul>
-      <li><i class="fas fa-upload"></i> Téléchargez votre image.</li>
-      <li><i class="fas fa-search"></i> Cliquez sur "Analyser l'embryon" pour obtenir les résultats.</li>
+  <h2 class="title text-4xl font-bold text-center text-gray-800 mb-6">Embryo Analysis</h2>
+  <div class="instructions text-lg text-gray-700 mb-6">
+    <p class="mb-2"><i class="fas fa-info-circle mr-2"></i> Before starting, please follow these steps:</p>
+    <ul class="list-disc pl-5">
+      <li class="mb-1"><i class="fas fa-upload mr-2"></i> Upload your image.</li>
+      <li><i class="fas fa-search mr-2"></i> Click "Analyze Embryo" to get the results.</li>
     </ul>
   </div>
-  <!-- <form (ngSubmit)="onSubmit()" #cvForm="ngForm" novalidate>
-    <div class="upload-section">
-      <label for="cvUpload"><i class="fas fa-file-upload"></i> Téléchargez votre image (format):</label>
-      <input type="file" (change)="onFileSelected($event)" id="cvUpload" name="cvUpload" required>
-      
-      <img [src]="preview" class="preview" width="400" height="200">
-      <div *ngIf="fileErrorMsg" class="error">{{ fileErrorMsg }}</div>
-    </div>
-    <button type="submit" class="btn-analyze"><i class="fas fa-analysis"></i> Analyser l'embryon</button>
-    <button *ngIf="preview" (click)="clearImage()">Clear Image</button>
-  </form> -->
-  <div class="upload-section">
-    <label for="cvUpload"><i class="fas fa-file-upload"></i> Téléchargez votre image (format):</label>
-    <input type="file" (change)="onFileSelected($event)" id="cvUpload" name="cvUpload" required>
+
+  <div class="upload-section mb-6">
+    <label for="cvUpload" class="block text-lg font-semibold text-gray-800 mb-2">
+      <i class="fas fa-file-upload mr-2"></i> Upload your image:
+    </label>
+    <input type="file" (change)="onFileSelected($event)" id="cvUpload" name="cvUpload" class="block w-full text-lg p-2 border border-gray-300 rounded" required>
     
-    <img [src]="preview" class="preview" width="400" height="200">
-    <div>
-      <h2>Result: {{ embryo_result }}</h2>
+    <!-- Progress bar -->
+    <div *ngIf="isLoading" class="progress-bar bg-gray-200 rounded-full h-2.5 mb-6">
+      <div class="progress-bar-fill bg-blue-600 h-2.5 rounded-full" [style.width.%]="progress">
+      </div>
     </div>
-    <div *ngIf="fileErrorMsg" class="error">{{ fileErrorMsg }}</div>
-  </div>
-  <button *ngIf="preview" (click)="clearImage()" class="btn-clear">Clear Image</button>
-  <button type="button" (click)="onSubmit()" class="btn-analyze"><i class="fas fa-analysis"></i> Analyser l'embryon</button>
-  
 
-<!-- Display Results Dynamically -->
-<!-- <div *ngIf="analysisResults" class="mt-4">
-  <h3>Les Résultats de l'analyse : </h3>
-  <div *ngFor="let field of analysisResults.fields">
-    <div class="card">
-      <div class="card-header">{{ field.key | titlecase }}</div>
-      <div class="card-body">{{ field.value }}</div>
+    <div *ngIf="error" class="error text-red-500 text-lg mb-4">{{ error }}</div>
+    <div
+      *ngIf="!error && !predicted_class && startProgressBar"
+      class="text-gray-700 text-lg mb-4">
+      Processing embryo image
     </div>
+
+    <div class="image-wrapper flex">
+      <div class="image-preview-container flex mt-4">
+        <img [src]="preview" class="preview w-48 h-32 object-cover mr-2" *ngIf="preview">
+      </div>
+      <div class="image-preview-container flex mt-4">
+        <img [src]="image_segmented_path" class="preview w-48 h-32 object-cover ml-2" *ngIf="image_segmented_path">
+      </div>
+    </div>
+    
+
+    <div *ngIf="fileErrorMsg" class="error text-red-500 mt-2">{{ fileErrorMsg }}</div>
   </div>
-  <div class="alert alert-success">
-    <strong>Les résultats:</strong> {{ analysisResults?.match_percentage }}<br>
-    <strong>Explanation:</strong> {{ analysisResults?.explanation }}
+  <!-- Progress bar -->
+
+  <!-- <div *ngIf="progress > 0" class="progress-bar">
+    <div class="progress-bar-fill" [style.width.%]="progress"></div>
   </div> -->
+  <div class=" flex justify-between">
+    <button *ngIf="preview" (click)="clearImage()" class="btn-clear bg-red-600 text-white py-2 px-4 rounded shadow hover:bg-red-700 transition duration-200 ease-in-out"><i class="fas fa-trash mr-2"></i> Clear Image</button>
+    <button type="button" (click)="onSubmit()" class="btn-analyze bg-blue-600 text-white py-2 px-4 rounded shadow hover:bg-blue-700 transition duration-200 ease-in-out"><i class="fas fa-search mr-2"></i> Analyze Embryo</button>
+  </div>
+  <!-- <div class="result-container mt-8">
+    <div *ngIf="predicted_class">
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">Predicted Class:</h2>
+        <h2 class="text-lg font-bold text-gray-800 mb-2">{{ predicted_class }}:</h2>
+    </div>
 
+    <div  *ngIf="predicted_probabilities"class="percentages_container">
+      <div class="circular-chart-wrapper text-center">
+        <h2 class="text-lg font-bold text-gray-800 mb-2">bad:</h2>
+        <svg viewBox="0 0 36 36" class="circular-chart" width="70" height="70">
+          <path class="circle"
+            [attr.stroke-dasharray]="0.5 + ', 100'"
+            [style.stroke]="getChartColor('bad')"
+            d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+        </svg>
+        <div class="percentage-value text-lg text-gray-700 mt-2">{{ predicted_probabilities['bad'] }}%</div>
+
+      </div>
+
+      <div class="circular-chart-wrapper text-center">
+        <h2 class="text-lg font-bold text-gray-800 mb-2">average:</h2>
+        <svg viewBox="0 0 36 36" class="circular-chart" width="70" height="70">
+          <path class="circle"
+            [attr.stroke-dasharray]="predicted_probabilities['average'] + ', 100'"
+            [style.stroke]="getChartColor('average')"
+            d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+        </svg>
+        <div class="percentage-value text-lg text-gray-700 mt-2">{{ predicted_probabilities['average'] }}%</div>
+
+      </div>
+      <div class="circular-chart-wrapper text-center">
+        <h2 class="text-lg font-bold text-gray-800 mb-2">good:</h2>
+        <svg viewBox="0 0 36 36" class="circular-chart" width="70" height="70">
+          <path class="circle"
+            [attr.stroke-dasharray]="predicted_probabilities['good'] + ', 100'"
+            [style.stroke]="getChartColor('good')"
+            d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+        </svg>
+        <div class="percentage-value text-lg text-gray-700 mt-2">{{ predicted_probabilities['good'] }}%</div>
+
+      </div>
+    </div>
+    
+  </div>
+   -->
+   <div class="result-container mt-8">
+    <div
+      *ngIf="predicted_class"
+      class="predicted-class-container"
+    >
+      <h3 class="text-xl font-semibold text-gray-800 mb-4">
+        Predicted Class:
+      </h3>
+      <h4
+        class="text-xl font-semibold text-gray-800 mb-4 predicted-class"
+      >
+        {{ predicted_class }}
+      </h4>
+    </div>
+
+    <div
+      *ngIf="predicted_probabilities"
+      class="percentages_container"
+    >
+      <div class="circular-chart-wrapper text-center">
+        <h4 class="text-lg font-bold text-gray-800 mb-2">BAD</h4>
+        <svg
+          viewBox="0 0 36 36"
+          class="circular-chart"
+          width="70"
+          height="70"
+        >
+          <path
+            class="circle"
+            [attr.stroke-dasharray]="predicted_probabilities['bad']  + ', 100'"
+            [style.stroke]="getChartColor('bad')"
+            d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+        </svg>
+        <div class="percentage-value text-lg text-gray-700 mt-2">
+          {{ predicted_probabilities['bad'] }}%
+        </div>
+      </div>
+
+      <div class="circular-chart-wrapper text-center">
+        <h4 class="text-lg font-bold text-gray-800 mb-2">AVERAGE</h4>
+        <svg
+          viewBox="0 0 36 36"
+          class="circular-chart"
+          width="70"
+          height="70"
+        >
+          <path
+            class="circle"
+            [attr.stroke-dasharray]="
+              predicted_probabilities['average'] + ', 100'
+            "
+            [style.stroke]="getChartColor('average')"
+            d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+        </svg>
+        <div class="percentage-value text-lg text-gray-700 mt-2">
+          {{ predicted_probabilities['average'] }}%
+        </div>
+      </div>
+      <div class="circular-chart-wrapper text-center">
+        <h4 class="text-lg font-bold text-gray-800 mb-2">GOOD</h4>
+        <svg
+          viewBox="0 0 36 36"
+          class="circular-chart"
+          width="70"
+          height="70"
+        >
+          <path
+            class="circle"
+            [attr.stroke-dasharray]="
+              predicted_probabilities['good'] + ', 100'
+            "
+            [style.stroke]="getChartColor('good')"
+            d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+        </svg>
+        <div class="percentage-value text-lg text-gray-700 mt-2">
+          {{ predicted_probabilities['good'] }}%
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

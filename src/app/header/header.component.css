@@ -1,24 +1,28 @@
+/* Header */
 .app-header {
   background-color: #050B24;
   color: #20afec;
-  padding: 1rem 2rem; /* Increased horizontal padding */
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2); /* Adding subtle shadow for depth */
-}
-.app-header:not(:last-child) {
-  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  animation: fadeInDown 1s ease-in-out; /* Header fade-in animation */
+  font-size: 1.2rem;
+
 }
 
 .logo {
-  height: 60px; /* Adjust as needed */
-  width: auto; /* Maintain aspect ratio */
-  transition: transform 0.3s ease; /* Smooth transition for logo on hover */
+  height: 60px;
+  width: auto;
+  transition: transform 0.3s ease;
 }
 
 .logo:hover {
-  transform: scale(1.05); /* Slightly enlarge logo on hover */
+  transform: scale(1.05);
 }
 
 .navigation {
@@ -29,16 +33,37 @@
 .navigation a {
   color: #3A9689;
   text-decoration: none;
-  margin: 0 15px; /* Increased margin for better spacing */
-  padding: 5px 0; /* Padding to increase clickable area */
-  border-bottom: 3px solid transparent; /* Invisible border for transition */
-  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  margin: 0 15px;
+  padding: 5px 0;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
 }
 
 .navigation a:hover,
 .navigation a.active {
   color: #ffffff;
-  border-bottom-color: #20afec; /* Underline effect on hover and for active link */
+  border-bottom-color: #20afec;
+}
+
+.login-link {
+  display: flex;
+  align-items: center;
+}
+
+.login-link i {
+  margin-right: 5px;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Responsive adjustments */
@@ -49,29 +74,33 @@
   }
 
   .logo {
-    margin-bottom: 1rem; /* Add space between logo and navigation on smaller screens */
+    margin-bottom: 1rem;
   }
 
   .navigation {
     width: 100%;
     justify-content: center;
+    flex-direction: column;
+    align-items: center;
   }
 
   .navigation a {
-    margin: 5px; /* Reduce margin for smaller screens */
+    margin: 5px 0;
     text-align: center;
-    flex-grow: 1; /* Navigation links take up equal space */
+    flex-grow: 1;
+  }
+
+  .navigation .login-link {
+    justify-content: center;
   }
 }
 
-.navigation .login-link {
-  display: flex;
-  align-items: center;
-  color: #3A9689; /* Adjust the color as needed */
-  text-decoration: none;
-  padding-left: 20px; /* Spacing from the last navigation link */
-}
+@media (max-width: 576px) {
+  .logo {
+    height: 50px;
+  }
 
-.navigation .login-link i {
-  margin-right: 5px; /* Space between the icon and text */
+  .navigation a {
+    font-size: 1.5rem;
+  }
 }

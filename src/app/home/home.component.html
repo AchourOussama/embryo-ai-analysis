@@ -1,49 +1,59 @@
-<!-- <p>home works!</p> -->
-<app-header></app-header> <!-- This line includes the header component -->
-
+<app-header></app-header>
 
 <!-- Hero Section -->
 <section class="hero-section">
   <div class="hero-content">
-    <h1>Révolutionnez l'évaluation embryonnaire avec GenAI </h1>
-    <p>Téléchargez une image et laissez la précision de l'intelligence artificielle noter la qualité.</p>
-    <button (click)="onAnalyzeClick()" class="btn btn-primary">Analyser l'embryon</button>
-
+    <h1>Revolutionize Embryo Evaluation with GenAI</h1>
+    <p>Upload an image and let the precision of artificial intelligence rate the quality.</p>
+    <button (click)="onAnalyzeClick()" class="btn btn-primary">Analyze Embryo</button>
   </div>
 </section>
-
 
 <!-- Features Section -->
 <section class="features-section">
   <div class="feature">
-    <img src="./../../assets/images/analysis.png" alt="Analyse de qualité" class="icon">
-    <h3>Analyse de qualité</h3>
-    <p>Dévoilez le potentiel de chaque embryon grâce à une analyse de qualité intransigeante, appuyée par la puissance de GenAI.</p>
+    <img src="./../../assets/images/analysis.png" alt="Quality Analysis" class="icon">
+    <h3>Quality Analysis</h3>
+    <p>Unveil the potential of each embryo with uncompromising quality analysis, supported by the power of GenAI.</p>
   </div>
   <div class="feature">
     <img src="./../../assets/images/agreement.png" alt="Accord" class="icon">
-    <h3>Correspondance précise</h3>
-    <p>Avec GenAI, bénéficiez d'une correspondance précise qui associe chaque image embryonnaire à sa note qualitative, permettant des décisions plus informées pour un succès optimisé.</p>
+    <h3>Precise Matching</h3>
+    <p>With GenAI, benefit from precise matching that associates each embryo image with its qualitative score, enabling informed decisions for optimized success.</p>
   </div>
   <div class="feature">
-    <img src="./../../assets/images/ideas.png" alt="Idées" class="icon">
-    <h3>Conseils personnalisés</h3>
-    <p>Plus qu'une simple classification – GenAI fournit des conseils personnalisés, adaptés à chaque cas, pour accompagner les professionnels vers les meilleures issues possibles.s</p>
+    <img src="./../../assets/images/ideas.png" alt="Ideas" class="icon">
+    <h3>Personalized Advice</h3>
+    <p>More than just classification - GenAI provides personalized advice, tailored to each case, to guide professionals towards the best possible outcomes.</p>
   </div>
-  <!-- Répétez pour d'autres fonctionnalités -->
 </section>
-
-
-
-
 
 <!-- Contact Section -->
 <section class="contact-section">
-  <h2>Contact Us</h2>
-  <!-- Contact details or form -->
+  <div class="contact-content">
+    <h2>Contact Us</h2>
+    <!-- <form (ngSubmit)="onSubmit(contactForm)" #contactForm="ngForm"> -->
+      <form #contactForm="ngForm">
+        <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" ngModel required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" ngModel required>
+      </div>
+      <div class="form-group">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" ngModel required></textarea>
+      </div>
+      <!-- <button type="submit" class="btn btn-primary" [disabled]="!contactForm.valid">Send</button> -->
+      <button type="submit" class="btn btn-primary" >Send</button>
+    </form>
+  </div>
 </section>
+
 
 <!-- Footer -->
 <footer class="site-footer">
-  <!-- Footer content -->
+  <p>© 2023 GenAI. All rights reserved.</p>
 </footer>

@@ -23,7 +23,7 @@ export class FileUploadServiceService {
 
   }
   //for testing
-  getData() {
-    return this.http.get<any>(`${API_URL}/data`);
-  }
+  // getData() {
+  //   return this.http.get<any>(`${API_URL}/data`);
+  // }
 }

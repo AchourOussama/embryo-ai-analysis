@@ -1,44 +1,214 @@
-<div *ngIf="error" class="error">{{ error }}</div>
-<div *ngIf="!error && analysisResults.length === 0">No embryo images found.</div>
-<div *ngIf="analysisResults.length > 0">
-  <ul>
-    <li *ngFor="let embryo of analysisResults" class="embryo-item">
-      <div class="container">
-        <h2>Your Analyzed Embryo</h2>
-        <div *ngIf="embryo" class="embryo-details">
-          <div class="image-container">
-            <img [src]="embryo.image_path" alt="Uploaded Embryo Image">
-            <div class="image-name">{{ embryo.image_name }}</div>
-          </div>
-          <div class="result-container">
-            <div class="results">
-              <strong>Score:</strong> {{ embryo.result }}
-            </div>
-            <div class="results">
-              <strong>Note:</strong> {{ embryo.note }}
-            </div>
-            <div class="results">
-              <strong>Suggested Value:</strong> {{ embryo.suggested_value }}
-            </div>
-            <div class="form-section">
-              <h3>Update Details:</h3>
-              <div class="form-field">
-                <label>Note:</label>
-                <textarea [(ngModel)]="notes[embryo.image_path]" placeholder="Add your comments here..."></textarea>
+<app-header></app-header>
+<div class="container mx-auto p-6">
+  <div class="logo-container flex justify-center mb-6">
+    <img src="assets/images/logo-pfa.png" alt="Logo" class="logo w-24 h-auto" />
+  </div>
+  <h2 class="title text-4xl font-bold text-center text-gray-800 mb-6">
+    Analyze Embryo
+  </h2>
+
+  <!-- Progress bar -->
+  <div
+    *ngIf="isLoading"
+    class="progress-bar bg-gray-200 rounded-full h-2.5 mb-6"
+  >
+    <div
+      class="progress-bar-fill bg-blue-600 h-2.5 rounded-full"
+      [style.width.%]="progress"
+    ></div>
+  </div>
+
+  <div *ngIf="error" class="error text-red-500 text-lg mb-4">{{ error }}</div>
+  <div
+    *ngIf="!error && analysisResults.length === 0"
+    class="text-gray-700 text-lg mb-4">
+    Loading embryo results
+  </div>
+  <div *ngIf="analysisResults.length > 0" class="space-y-6">
+    <ul class="space-y-6">
+      <li *ngFor="let embryo of analysisResults" class="embryo-item">
+        <div class="container bg-white p-6 rounded-lg shadow-lg">
+          <!-- <h2 class="text-2xl font-bold text-gray-800 mb-4">
+            Your Analyzed Embryo
+          </h2> -->
+          <div *ngIf="embryo" class="embryo-details">
+            <div class="image-wrapper flex">
+              <div class="image-preview-container flex mt-4">
+                <img
+                  [src]="embryo.image_path"
+                  alt="Uploaded Embryo Image"
+                  class="preview w-48 h-32 object-cover mr-2"
+                />
+                <div
+                  class="image-name text-center text-lg font-medium text-gray-700 mt-2"
+                >
+                  {{ embryo.image_name }}
+                </div>
               </div>
-              <div class="form-field">
-                <label>Select a Value:</label>
-                <select [(ngModel)]="selectedValues[embryo.image_path]">
-                  <option *ngFor="let value of suggestedValues" [value]="value">{{ value }}</option>
-                </select>
+              <div class="image-preview-container flex mt-4">
+                <img
+                  [src]="embryo.segmented_image_path"
+                  alt="Segmented Embryo Image"
+                  class="preview w-48 h-32 object-cover ml-2"
+                />
+                <div
+                  class="image-name text-center text-lg font-medium text-gray-700 mt-2"
+                >
+                  {{ embryo.image_name }}
+                </div>
               </div>
-              <div class="button-section">
-                <button (click)="validateAndPostForm(embryo)">Validate Form</button>
+            </div>
+            <div class="result-container mt-8">
+              <div
+                *ngIf="embryo.predicted_class"
+                class="predicted-class-container"
+              >
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                  Predicted Class:
+                </h3>
+                <h4
+                  class="text-xl font-semibold text-gray-800 mb-4 predicted-class"
+                >
+                  {{ embryo.predicted_class }}
+                </h4>
+              </div>
+
+              <div
+                *ngIf="embryo.predicted_probabilities"
+                class="percentages_container"
+              >
+                <div class="circular-chart-wrapper text-center">
+                  <h4 class="text-lg font-bold text-gray-800 mb-2">BAD</h4>
+                  <svg
+                    viewBox="0 0 36 36"
+                    class="circular-chart"
+                    width="70"
+                    height="70"
+                  >
+                    <path
+                      class="circle"
+                      [attr.stroke-dasharray]="embryo.predicted_probabilities['bad']  + ', 100'"
+                      [style.stroke]="getChartColor('bad')"
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <div class="percentage-value text-lg text-gray-700 mt-2">
+                    {{ embryo.predicted_probabilities['bad'] }}%
+                  </div>
+                </div>
+
+                <div class="circular-chart-wrapper text-center">
+                  <h4 class="text-lg font-bold text-gray-800 mb-2">AVERAGE</h4>
+                  <svg
+                    viewBox="0 0 36 36"
+                    class="circular-chart"
+                    width="70"
+                    height="70"
+                  >
+                    <path
+                      class="circle"
+                      [attr.stroke-dasharray]="
+                        embryo.predicted_probabilities['average'] + ', 100'
+                      "
+                      [style.stroke]="getChartColor('average')"
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <div class="percentage-value text-lg text-gray-700 mt-2">
+                    {{ embryo.predicted_probabilities['average'] }}%
+                  </div>
+                </div>
+                <div class="circular-chart-wrapper text-center">
+                  <h4 class="text-lg font-bold text-gray-800 mb-2">GOOD</h4>
+                  <svg
+                    viewBox="0 0 36 36"
+                    class="circular-chart"
+                    width="70"
+                    height="70"
+                  >
+                    <path
+                      class="circle"
+                      [attr.stroke-dasharray]="
+                        embryo.predicted_probabilities['good'] + ', 100'
+                      "
+                      [style.stroke]="getChartColor('good')"
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <div class="percentage-value text-lg text-gray-700 mt-2">
+                    {{ embryo.predicted_probabilities['good'] }}%
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="result-container">
+              <div class="results-wrapper flex justify-between mb-6">
+                <div
+                  class="results note text-lg text-gray-800 p-4 rounded-lg w-1/2 mr-4 flex flex-col"
+                >
+                  <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                    Note:
+                  </h3>
+                  <p class="flex -1">{{ embryo.note }}</p>
+                </div>
+
+                <div
+                  class="results suggested-value text-lg text-gray-800 p-4 rounded-lg w-1/2 ml-4"
+                >
+                  <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                    Suggested Value:
+                  </h3>
+                  <p class="flex -1">{{ embryo.suggested_value }}</p>
+                </div>
+              </div>
+              <div class="form-section mt-6 p-4 rounded-lg">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                  Update Details:
+                </h3>
+                <div class="form-field mb-4">
+                  <label class="block text-gray-700 mb-2">Note:</label>
+                  <textarea
+                    [(ngModel)]="notes[embryo.image_path]"
+                    placeholder="Add your comments here..."
+                    class="w-full p-2 border border-gray-300 rounded-lg"
+                  ></textarea>
+                </div>
+                <div class="form-field mb-4">
+                  <label class="block text-gray-700 mb-2"
+                    >Select a Value:</label
+                  >
+                  <select
+                    [(ngModel)]="selectedValues[embryo.image_path]"
+                    class="w-full p-2 border border-gray-300 rounded-lg"
+                  >
+                    <option
+                      *ngFor="let value of suggestedValues"
+                      [value]="value"
+                    >
+                      {{ value }}
+                    </option>
+                  </select>
+                </div>
+                <div class="button-section text-center">
+                  <button
+                    (click)="validateAndPostForm(embryo)"
+                    class="bg-blue-600 text-white py-2 px-4 rounded shadow hover:bg-blue-700 transition duration-200 ease-in-out"
+                  >
+                    Validate Form
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </li>
-  </ul>
+      </li>
+    </ul>
+  </div>
 </div>
