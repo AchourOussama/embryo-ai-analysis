@@ -57,3 +57,6 @@ node_modules
 #angular
 .angular
 package-lock.json
+
+#scripts
+huge-file.sh 
