@@ -49,7 +49,7 @@ backend/__pycache__/
 backend/requirements-backup.txt 
 
 #models
-backend/models/
+# backend/models/
 
 #node modules
 node_modules
