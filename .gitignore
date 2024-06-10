@@ -46,6 +46,7 @@ backend/.env
 backend/.venv
 backend/output
 backend/__pycache__/
+backend/requirements-backup.txt 
 
 #models
 backend/models/

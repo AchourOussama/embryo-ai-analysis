@@ -1,27 +1,41 @@
-# Pfa
+# About the project:
+This an deep learning solution to help professional embryologist analyze embryos during their early stages throughout the In Vitro Fertilization IVF process. 
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.0.0.
 
-## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+The main idea was about constructing a Deep Learning model capable of recognizing the different zones of the embryo image, evaluating each zone separately, and thereby classifying the overall embryo 
 
-## Code scaffolding
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+# Technologies:
 
-## Build
+## Image segmentation:
+For the segmentation part, we Implemented the DenseNet121 UNet architecture, which is quite efficient in segmentation due to its encoder-decored architecture 
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## Image classification:
+For the classification part, we implemented the Xception neural network, which is renowned for its performance in image classification tasks.
 
-## Running unit tests
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Platform:
 
-## Running end-to-end tests
+To make our work concrete, we developed a user-friendly platform, enabling users to upload embryo images, and in a matter of few seconds, predictions from the deep learning models would be sent back and displayed in a user-friendly UI.
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+For the tech stack, we used Angular to build the front end and Flask API to develop the APIs.
 
-## Further help
+Leveraging Microsoft Azure, we ensured that our data would be safely persisted using Blob storage for storing embryo images and Azure SQL Database for storing the respective model's predictions
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+# Overview:
+
+![image](overview-pfa.png)
+
+<!-- ## Run the project
+### Run the frontend:
+- run **npm install** to install the node packages
+- run **ng serve** to serve the angular application  
+
+### Run the backend:
+- go to the **backend** directory
+- run **python3.10 -m pip install requirements.txt**
+- run **python3.10 app.py**
+
+I upl -->
+
