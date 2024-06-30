@@ -22,6 +22,9 @@ To make our work concrete, we developed a user-friendly platform, enabling users
 For the tech stack, we used Angular to build the front end and Flask API to develop the APIs.
 
 Leveraging Microsoft Azure, we ensured that our data would be safely persisted using Blob storage for storing embryo images and Azure SQL Database for storing the respective model's predictions
+### In order to run the platform check the following README files : 
+* [backend/README.md](backend/README.md)
+* [src/README.md](src/README.md)
 
 # Overview:
 
