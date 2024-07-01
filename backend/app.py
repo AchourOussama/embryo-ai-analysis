@@ -1,39 +1,25 @@
 from flask import Flask, Blueprint, request, jsonify,send_from_directory
 from flask_cors import CORS, cross_origin
-
-# from tensorflow.keras.models import load_model
 import pandas
 from werkzeug.utils import secure_filename
-
 import os
 from dotenv import load_dotenv
-
 import numpy 
 from PIL import Image
-
 from model import predict , segment, load_classification_model
 import threading
-
-
 #Blob
 from azure.storage.blob import BlobServiceClient
-
 #SQL
 import pyodbc, struct
 from azure import identity
 from typing import Union
-# from fastapi import FastAPI
 from pydantic import BaseModel
 from pydantic.json import pydantic_encoder
-
-
 #for connecting with service principal
 import msal
 import adal
-
 import json
-
-
 
 
 #loading .env to environment
@@ -81,7 +67,6 @@ class Embryo(BaseModel):
     note:Union[str, None] = None
 
 
-
 @app.route('/')
 def index():
     print("Hello, World!")
@@ -104,21 +89,16 @@ def upload_image():
             #saving image locally
             uploaded_file.save(destination_file)
 
-            # #saving image in blob
-            # saveToBlob(uploaded_file,destination_file)
-
             #processing the image : class prediction & segmentation
             predicted_probabilities={}
             predicted_class,predicted_probabilities=process_image(filename,destination_file)
-            # print("predicted_class{}\npredicted_probabilities{}".format(predicted_class,predicted_probabilities))
             
-            # loading the json object to extract data
+            #loading the json object to extract data
             predicted_probabilities=json.loads(predicted_probabilities)
-
             predicted_probabilities=PredictedProbabilities(bad=predicted_probabilities['bad'],average=predicted_probabilities['average'],good=predicted_probabilities['good'])
             result=ResultModel(predicted_class=predicted_class,predicted_probabilities=predicted_probabilities)            
             
-            #saving image in sql db
+            #creating embryo object
             embryo= Embryo(ImageName=filename,Result=result,suggested_value=None,note=None)
             
             #converting final result to json string 
@@ -133,10 +113,7 @@ def upload_image():
             threading.Thread(target=saveToBlob, args=(uploaded_file, destination_file)).start()
             threading.Thread(target=saveToSQLDB, args=(embryo,predicted_probabilities)).start()
 
-        
-
             return jsonify({'message': 'Image processed successfully', 'image_with_result': image_with_result}), 201
-            # return jsonify({'message': 'Image processed successfully'}), 201
 
         else:
             return jsonify({'error': 'Invalid file type, only JPEG images are allowed'}), 400
@@ -144,12 +121,8 @@ def upload_image():
         return jsonify({'error': str(e)}), 500
 
 
-
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'jpg','png', 'jpeg','bmp'}
-
-# def load_model():
 
 
 def process_image(image_name,image_path):
@@ -157,9 +130,6 @@ def process_image(image_name,image_path):
     #image segmentation
     segmented_image=segment(image_path)
     segmented_image_path = os.path.join(app.config['SEGMENTED_IMAGES'], image_name)
-    #saving image locally
-    # segmented_image.save(segmented_image_path)
-    # segmented_image = segmented_image.astype(np.uint8)  # Convert the data to uint8 type
 
     # Convert the NumPy array to a Pillow image
     image_pil = Image.fromarray(segmented_image.astype(numpy.uint8))
@@ -168,7 +138,7 @@ def process_image(image_name,image_path):
     image_pil.save(segmented_image_path)
 
 
-    #class prediction
+    # class prediction
     percentages={}
     print("begin predict")
 
@@ -182,8 +152,6 @@ def process_image(image_name,image_path):
     row = results_df.loc[results_df['image_name'] == image_name]
     print("row",row)
     predicted_class=row['classification'].to_string(index=False)
-    # print(image_name)
-    # print(result)
     print("predicted_class{}\npredicted_probabilities{}".format(predicted_class,predicted_probabilities))
 
     return predicted_class , predicted_probabilities
@@ -227,8 +195,6 @@ def saveToSQLDB(item: Embryo,predicted_probabilities:PredictedProbabilities):
     storage_account_url=os.environ["STORAGE_ACCOUNT_URL"]
 
     try:
-    
-        # conn = get_conn()
         conn=connect_oauth()
         cursor = conn.cursor()
 
@@ -254,14 +220,12 @@ def saveToSQLDB(item: Embryo,predicted_probabilities:PredictedProbabilities):
 
     print("******* Inserting new row ... *********")
     cursor.execute(f"INSERT INTO EmbryoResults (ImageName, PredictedClass,PredictedProbabilities,SuggestedValue,Note) VALUES (?,?,?,?,?)", item.ImageName, item.Result.predicted_class,json.dumps(predicted_probabilities,default=pydantic_encoder),item.suggested_value,item.note)
-    # cursor.execute(f"INSERT INTO EmbryoResults (ImageName, PredictedClass,PredictedProbabilities,SuggestedValue,Note) VALUES (?,?,?,?,?)", item.ImageName, "good","hello",item.suggested_value,item.note)
-
     conn.commit()
 
     print("successfully added in sql db")
     return item
 
-### connected with sql db in default way
+### connecting to sql db in default way
 def get_conn():
     credential = identity.DefaultAzureCredential(exclude_interactive_browser_credential=False)
     token_bytes = credential.get_token("https://database.windows.net/.default").token.encode("UTF-16-LE")
@@ -271,7 +235,7 @@ def get_conn():
     conn = pyodbc.connect(sql_connection_string, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token_struct})
     return conn
 
-### connected with sql db using service principal 
+### connecting to sql db using service principal 
 def connect_oauth():
     tenant_id = os.environ.get('AZURE_TENANT_ID')
     clientId = os.environ.get('AZURE_CLIENT_ID')
@@ -315,9 +279,7 @@ def get_all_results():
     rows = cursor.fetchall()
     print("rows",rows)
     conn.close()
-    # return {row.ImageName: row.Result for row in results}
     results = {}
-
 
     for row in rows:
         results[row.ImageName] = {
@@ -328,8 +290,8 @@ def get_all_results():
         }
     
     print("results",results)
-
     return results
+
 # API endpoint to list all images and their results
 @app.route('/images', methods=['GET'])
 def list_images_and_results():
@@ -350,17 +312,15 @@ def list_images_and_results():
                 'suggested_value': None,
                 'note': None
                 })
-            # image_name=result_data['image_name']
             response.append({
                 "image_name": image,
-                "image_path": f"http://localhost:5000/images/{image}",
-                "segmented_image_path":f"http://localhost:5000/segmented-images/{image}",
+                "image_path": f"http://localhost:8000/images/{image}",
+                "segmented_image_path":f"http://localhost:8000/segmented-images/{image}",
                 "predicted_class": result_data['predicted_class'],
                 "predicted_probabilities": result_data['predicted_probabilities'],
                 "suggested_value": result_data['suggested_value'],
                 "note": result_data['note']
             })
-
         return jsonify(response), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -368,6 +328,7 @@ def list_images_and_results():
 @app.route('/images/<path:filename>')
 def get_image(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
+
 
 @app.route('/segmented-images/<path:filename>')
 def get_segmented_image(filename):
@@ -397,14 +358,10 @@ def update_embryo():
         cursor.execute("""
             UPDATE EmbryoResults
             SET PredictedClass = ?, PredictedProbabilities = ?, SuggestedValue = ?, Note = ?
-            WHERE ImageName = ?""", (predicted_class, predicted_probabilities, suggested_value, note, image_name)
-             
+            WHERE ImageName = ?""", (predicted_class, predicted_probabilities, suggested_value, note, image_name)   
             )
-
-
         conn.commit()
         conn.close()
-
         return jsonify({'message': 'Embryo updated successfully'}), 200
 
     except Exception as e:
@@ -412,8 +369,6 @@ def update_embryo():
             conn.rollback()
             conn.close()
         return jsonify({'error': str(e)}), 500
-
-  
 
 
 ###  THIS DOESN'T WORK !! :   API endpoint to retrieve image and result
@@ -457,8 +412,6 @@ def get_image_and_result(image_name):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-
 # This is are unused APIs
 
 @app.route('/get', methods=['GET'])
@@ -476,4 +429,4 @@ def get_data():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=8000,debug=True)

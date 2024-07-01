@@ -128,7 +128,7 @@ export class AnalyseEmbryonComponent {
       const image_name=response.image_with_result.image_name;
 
       console.log(image_name)
-      this.image_segmented_path=`http://localhost:5000/segmented-images/${image_name}`;
+      this.image_segmented_path=`http://localhost:8000/segmented-images/${image_name}`;
       
       console.log("segmented path",this.image_segmented_path)
       this.toastr.success('Embryo image successfully processed!', 'Success');
