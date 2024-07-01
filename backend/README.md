@@ -1,6 +1,18 @@
-1. Install the requirements: 
+1. Install the requirements: <br>
+    **IMPORTANT !** <br>
+    For compatibility reasons with the model , please use **python 3.10** as a version
 
-    **python3.10 -m pip install requirements.txt** 
+    Create a python virtual environment (to avoid packages conflict with the system):
+    - pip install virtualenv
+    - python3.10 -m venv <venv_name>
+    - source <venv_name>/bin/activate
+    - pip install -r ./backend/requirements.txt
+
+    Additionally, install **unixodbc** driver manager
+    - Linux(ubuntu): **sudo apt install unixodbc**
+    - macOS : **brew install unixodbc**
+
+    Fore more information , check this [link](https://docs.teradata.com/r/Teradata-Package-for-R-User-Guide/July-2021/Connecting-to-Vantage-with-Teradata-ODBC-Driver/Installing-and-Configuring-Teradata-ODBC) (it also includes installation guides for other linux distributions and windows operating systems)
 
 2. Provision the following resources in Microsoft Azure:
 - Azure SQL DB 
@@ -18,5 +30,4 @@
 
     2. create service principal using :**az ad sp create-for-rbac --name "App Name" --role contributor --scopes /subscriptions/{subscription_id}**
 
-        az ad sp create-for-rbac --name "embryo_app" --role contributor --scopes /subscriptions/d203f531-849f-4cc5-96e3-bf163d2fd5a7
 5. run the application using **python3.10 app.py**

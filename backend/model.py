@@ -9,8 +9,6 @@ import json
 from pydantic.json import pydantic_encoder
 from PIL import Image
 import matplotlib.pyplot as plt
-
-
 import pandas 
 
 
@@ -62,13 +60,6 @@ def predict(model,image_path,image_name):
     # Convert the list of images to a numpy array
     images = np.array(images)
 
-
-    # #loading the model
-    # MODEL_PATH="./models/Images_checkpoint.h5"
-    # # INPUT_PATH="./input_images/MTL-0130-1652-5E96-P09-FP4.jpg_0_0.bmp"
-    # model = load_model(MODEL_PATH)
-    # model.summary()
-
     print("before predict from predict")
     predictions=model.predict(images)
     print(predictions)
@@ -80,17 +71,14 @@ def predict(model,image_path,image_name):
         "bad":predictions[0][0]*100,
         "average":predictions[0][2]*100,
         "good":predictions[0][1]*100
-
     }
+
     # Get predicted classes
     predicted_classes = np.argmax(predictions, axis=1)
-
     pourcentages = json.dumps(pourcentages,default=pydantic_encoder)
 
     # print("******** pourcentages: ",pourcentages)
 
-
-    
     # # Save the DataFrame to a CSV file
     results_csv_file = './results/results_csv.csv'
     results_df = pandas.DataFrame({'image_name': image_name, 'classification': predicted_classes})
@@ -134,12 +122,9 @@ def predict(model,image_path,image_name):
         # If the file does not exist, write the DataFrame with the header
         results_df.to_csv(results_csv_file, index=False)
         print(f"Created new labeled CSV file and added {image_name}.")
-    # results_df.to_csv(labled_results_csv_file,mode='a', header=False, index=False)
-    # print("Labled predictions saved to:", labled_results_csv_file)
     return pourcentages
 
 
-# predict()
 
 def segment(image_path):
     ## This decorators ensures that Keras knows how to serialize and deserialize the function when saving and loading the model.
@@ -179,7 +164,6 @@ def segment(image_path):
     x = cv2.resize(image, (256, 256))
 
     # Normalize the image
-    # x=image
     x = x / 255.0
     x = x.astype(np.float32)
 

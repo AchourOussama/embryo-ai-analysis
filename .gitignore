@@ -46,9 +46,15 @@ backend/.env
 backend/.venv
 backend/output
 backend/__pycache__/
+backend/embryo-ai-analysis-venv
 backend/requirements-backup.txt 
+backend/requirements-old.txt 
+
 
 #models
+backend/models
+backend/models-old-lfs
+
 # backend/models/
 
 #node modules
