@@ -9,8 +9,12 @@ import json
 from pydantic.json import pydantic_encoder
 from PIL import Image
 import matplotlib.pyplot as plt
+import matplotlib
 import pandas 
 
+# This line prevents the "UserWarning: Starting a Matplotlib GUI outside of the main thread will likely fail" error in macOS ,
+# which ends up raising an 'NSInternalInconsistencyException' exception and terminating the app
+matplotlib.use('agg')
 
 def load_classification_model():
     print("################ Loading Classification Model ################")
