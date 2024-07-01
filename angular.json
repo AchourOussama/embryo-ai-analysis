@@ -7,25 +7,25 @@
       "projectType": "application",
       "schematics": {},
       "root": "",
-      "sourceRoot": "src",
+      "sourceRoot": "frontend",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist/pfa",
-            "index": "src/index.html",
-            "main": "src/main.ts",
+            "index": "frontend/index.html",
+            "main": "frontend/main.ts",
             "polyfills": [
               "zone.js"
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              "src/favicon.ico",
-              "src/assets"
+              "frontend/favicon.ico",
+              "frontend/assets"
             ],
             "styles": [
-              "src/styles.css",
+              "frontend/styles.css",
               "node_modules/ngx-toastr/toastr.css"
 
             ],
@@ -85,11 +85,11 @@
             ],
             "tsConfig": "tsconfig.spec.json",
             "assets": [
-              "src/favicon.ico",
-              "src/assets"
+              "frontend/favicon.ico",
+              "frontend/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "frontend/styles.css"
             ],
             "scripts": []
           }
